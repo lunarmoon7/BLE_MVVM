@@ -207,6 +207,8 @@ class BleRepository {
             )
             descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
             gatt.writeDescriptor(descriptor)
+
+
         }
 
         override fun onCharacteristicChanged(
@@ -237,6 +239,7 @@ class BleRepository {
             characteristic: BluetoothGattCharacteristic,
             status: Int
         ) {
+
             super.onCharacteristicRead(gatt, characteristic, status)
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 Log.d(TAG, "Characteristic read successfully")
@@ -258,8 +261,10 @@ class BleRepository {
 
             //val msg = characteristic.getStringValue(0)
             val valueByteArray = characteristic.value // get the value as a ByteArray
+            val valUUID = characteristic.uuid.toString().substring(4,8)
+            val value = valueByteArray.getIntAt(0);
             //val msg = valueByteArray.toString(Charsets.UTF_8)
-            val msg = valueByteArray.toString(Charsets.UTF_8)
+            val msg = valUUID+" : "+value.toString()+" \n"
 
 
             txtRead = msg
@@ -267,6 +272,12 @@ class BleRepository {
 
             Log.d(TAG, "read: $msg")
         }
+
+        fun ByteArray.getIntAt(idx: Int) =
+            //((this[idx].toUInt() and 0xFFu) shl 24) or
+                    //((this[idx].toInt() and 0xFF) shl 16) //or
+                    //((this[idx].toInt() and 0xFF) shl 8) //or
+                    ((this[idx].toInt()) and 0xFF)
 
 
     }
@@ -299,7 +310,7 @@ class BleRepository {
     }
 
     fun writeData(cmdByteArray: ByteArray){
-        val cmdCharacteristic = BluetoothUtils.findCommandCharacteristic(bleGatt!!)
+        val cmdCharacteristic = BluetoothUtils.findCommandCharacteristic(bleGatt!!, 0)
         // disconnect if the characteristic is not found
         if (cmdCharacteristic == null) {
             Log.e(TAG, "Unable to find cmd characteristic")
