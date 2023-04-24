@@ -24,6 +24,12 @@
             android:text="Press the Scan button to start Ble Scan."
             android:textColor="@color/lilly_color4" />
 
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_home"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Go to Home" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -98,6 +104,12 @@
                 android:lineSpacingExtra="7dp"
                 android:textColor="@color/white" />
         </ScrollView>
+
+        <Button
+            android:id="@+id/button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Button" />
 
 
     </LinearLayout>

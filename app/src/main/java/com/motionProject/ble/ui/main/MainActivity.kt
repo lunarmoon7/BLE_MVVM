@@ -14,6 +14,7 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.AppCompatButton
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -69,6 +70,11 @@ class MainActivity : AppCompatActivity() {
 
 
     }
+    private fun initHomeBtn(){
+        val homeBtn = findViewById<AppCompatButton>(R.id.btn_home)
+
+    }
+
     private fun initObserver(binding: ActivityMainBinding){
         viewModel.requestEnableBLE.observe(this, {
             it.getContentIfNotHandled()?.let {

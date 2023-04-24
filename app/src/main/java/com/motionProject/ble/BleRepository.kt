@@ -28,9 +28,11 @@ class BleRepository {
     // ble manager
     val bleManager: BluetoothManager =
         MyApplication.applicationContext().getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
+
     // ble adapter
     val bleAdapter: BluetoothAdapter?
         get() = bleManager.adapter
+
     // ble Gatt
     private var bleGatt: BluetoothGatt? = null
 
@@ -42,17 +44,18 @@ class BleRepository {
 
     var isStatusChange: Boolean = false
     var isTxtRead: Boolean = false
-    fun fetchReadText() = flow{
-        while(true) {
-            if(isTxtRead) {
+    fun fetchReadText() = flow {
+        while (true) {
+            if (isTxtRead) {
                 emit(txtRead)
                 isTxtRead = false
             }
         }
     }.flowOn(Dispatchers.Default)
-    fun fetchStatusText() = flow{
-        while(true) {
-            if(isStatusChange) {
+
+    fun fetchStatusText() = flow {
+        while (true) {
+            if (isStatusChange) {
                 emit(statusTxt)
                 isStatusChange = false
             }
@@ -71,15 +74,15 @@ class BleRepository {
         // check ble adapter and ble enabled
         if (bleAdapter == null || !bleAdapter?.isEnabled!!) {
             requestEnableBLE.postValue(Event(true))
-            statusTxt ="Scanning Failed: ble not enabled"
+            statusTxt = "Scanning Failed: ble not enabled"
             isStatusChange = true
             return
         }
         //scan filter
         val filters: MutableList<ScanFilter> = ArrayList()
         val scanFilter: ScanFilter = ScanFilter.Builder()
-            //.setDeviceName(DEVICE_NAME)
-            .setDeviceAddress(DEVICE_ADDRESS)
+            .setDeviceName(DEVICE_NAME)
+            //.setDeviceAddress(DEVICE_ADDRESS)
             //.setServiceUuid(ParcelUuid(UUID.fromString(SERVICE_STRING)))
             .build()
         filters.add(scanFilter)
@@ -92,7 +95,7 @@ class BleRepository {
         bleAdapter?.bluetoothLeScanner?.startScan(filters, settings, BLEScanCallback)
 
         // 전체 스캔
-        //bleAdapter?.bluetoothLeScanner?.startScan(BLEScanCallback)
+//        bleAdapter?.bluetoothLeScanner?.startScan(BLEScanCallback)
 
         statusTxt = "Scanning...."
         isStatusChange = true
@@ -102,7 +105,7 @@ class BleRepository {
     }
 
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-    fun stopScan(){
+    fun stopScan() {
         bleAdapter?.bluetoothLeScanner?.stopScan(BLEScanCallback)
         isScanning.postValue(Event(false))
         statusTxt = "Scan finished. Click on the name to connect to the device."
@@ -157,30 +160,129 @@ class BleRepository {
         }
     }
 
-    /**
-     * BLE gattClientCallback
-     */
-    private val gattClientCallback: BluetoothGattCallback = object : BluetoothGattCallback() {
+    private val gattClientCall: BluetoothGattCallback = object : BluetoothGattCallback() {
         override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
             super.onConnectionStateChange(gatt, status, newState)
-            if( status == BluetoothGatt.GATT_FAILURE ) {
+            if (status == BluetoothGatt.GATT_FAILURE) {
                 disconnectGattServer()
                 return
-            } else if( status != BluetoothGatt.GATT_SUCCESS ) {
+            } else if (status != BluetoothGatt.GATT_SUCCESS) {
                 disconnectGattServer()
                 return
             }
-            if( newState == BluetoothProfile.STATE_CONNECTED ) {
+            if (newState == BluetoothProfile.STATE_CONNECTED) {
                 // update the connection status message
 
                 statusTxt = "Connected"
                 isStatusChange = true
                 Log.d(TAG, "Connected to the GATT server")
                 gatt.discoverServices()
-            } else if ( newState == BluetoothProfile.STATE_DISCONNECTED ) {
+            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 disconnectGattServer()
             }
         }
+
+        override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
+            super.onServicesDiscovered(gatt, status)
+            val services: List<BluetoothGattService> = gatt!!.services
+            for (service in services) {
+                val characteristics: List<BluetoothGattCharacteristic> = service.characteristics
+                for (characteristic in characteristics) {
+                    readCharacteristic(characteristic)
+                }
+
+                // check if the discovery failed
+                if (status != BluetoothGatt.GATT_SUCCESS) {
+                    Log.e(TAG, "Device service discovery failed, status: $status")
+                    return
+                }
+                Log.d(TAG, "Services discovery is successful")
+                isConnect.postValue(Event(true))
+
+                val respCharacteristic = gatt?.let { BluetoothUtils.findResponseCharacteristic(it) }
+                // disconnect if the characteristic is not found
+                if (respCharacteristic == null) {
+                    Log.e(TAG, "Unable to find cmd characteristic")
+                    disconnectGattServer()
+                    return
+                }
+                gatt.setCharacteristicNotification(respCharacteristic, true)
+                // UUID for notification
+                val descriptor: BluetoothGattDescriptor = respCharacteristic.getDescriptor(
+                    UUID.fromString(CLIENT_CHARACTERISTIC_CONFIG)
+                )
+                descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+                gatt.writeDescriptor(descriptor)
+
+            }
+
+        }
+
+        private fun readCharacteristic(characteristic: BluetoothGattCharacteristic) {
+            //val msg = characteristic.getStringValue(0)
+            val valueByteArray = characteristic.value // get the value as a ByteArray
+            val valUUID = characteristic.uuid.toString().substring(4, 8)
+            val value = valueByteArray.getIntAt(0)
+            //val msg = valueByteArray.toString(Charsets.UTF_8)
+            val msg = valUUID + " : " + value.toString() + " \n"
+
+
+            txtRead = msg
+            isTxtRead = true
+
+            Log.d(TAG, "read: $msg")
+        }
+        fun ByteArray.getIntAt(idx: Int) =
+        //((this[idx].toUInt() and 0xFFu) shl 24) or
+        //((this[idx].toInt() and 0xFF) shl 16) //or
+            //((this[idx].toInt() and 0xFF) shl 8) //or
+            ((this[idx].toInt()) and 0xFF)
+
+        override fun onCharacteristicRead(
+            gatt: BluetoothGatt?,
+            characteristic: BluetoothGattCharacteristic,
+            status: Int
+        ) {
+
+            super.onCharacteristicRead(gatt, characteristic, status)
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                Log.d(TAG, "Characteristic read successfully")
+                readCharacteristic(characteristic)
+            } else {
+                Log.e(TAG, "Characteristic read unsuccessful, status: $status")
+                // Trying to read from the Time Characteristic? It doesnt have the property or permissions
+                // set to allow this. Normally this would be an error and you would want to:
+                // disconnectGattServer()
+            }
+        }
+    }
+
+
+    /**
+     * BLE gattClientCallback
+     */
+    private val gattClientCallback: BluetoothGattCallback = object : BluetoothGattCallback() {
+        override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
+            super.onConnectionStateChange(gatt, status, newState)
+            if (status == BluetoothGatt.GATT_FAILURE) {
+                disconnectGattServer()
+                return
+            } else if (status != BluetoothGatt.GATT_SUCCESS) {
+                disconnectGattServer()
+                return
+            }
+            if (newState == BluetoothProfile.STATE_CONNECTED) {
+                // update the connection status message
+
+                statusTxt = "Connected"
+                isStatusChange = true
+                Log.d(TAG, "Connected to the GATT server")
+                gatt.discoverServices()
+            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                disconnectGattServer()
+            }
+        }
+
         override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
             super.onServicesDiscovered(gatt, status)
 
@@ -189,13 +291,12 @@ class BleRepository {
                 Log.e(TAG, "Device service discovery failed, status: $status")
                 return
             }
-            // log for successful discovery
             Log.d(TAG, "Services discovery is successful")
             isConnect.postValue(Event(true))
-            // find command characteristics from the GATT server
-            val respCharacteristic = gatt?.let { BluetoothUtils.findResponseCharacteristic(it)}
+
+            val respCharacteristic = gatt?.let { BluetoothUtils.findResponseCharacteristic(it) }
             // disconnect if the characteristic is not found
-            if( respCharacteristic == null ) {
+            if (respCharacteristic == null) {
                 Log.e(TAG, "Unable to find cmd characteristic")
                 disconnectGattServer()
                 return
@@ -207,7 +308,6 @@ class BleRepository {
             )
             descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
             gatt.writeDescriptor(descriptor)
-
 
         }
 
@@ -258,13 +358,12 @@ class BleRepository {
          */
 
         private fun readCharacteristic(characteristic: BluetoothGattCharacteristic) {
-
             //val msg = characteristic.getStringValue(0)
             val valueByteArray = characteristic.value // get the value as a ByteArray
-            val valUUID = characteristic.uuid.toString().substring(4,8)
-            val value = valueByteArray.getIntAt(0);
+            val valUUID = characteristic.uuid.toString().substring(4, 8)
+            val value = valueByteArray.getIntAt(0)
             //val msg = valueByteArray.toString(Charsets.UTF_8)
-            val msg = valUUID+" : "+value.toString()+" \n"
+            val msg = valUUID + " : " + value.toString() + " \n"
 
 
             txtRead = msg
@@ -274,11 +373,10 @@ class BleRepository {
         }
 
         fun ByteArray.getIntAt(idx: Int) =
-            //((this[idx].toUInt() and 0xFFu) shl 24) or
-                    //((this[idx].toInt() and 0xFF) shl 16) //or
-                    //((this[idx].toInt() and 0xFF) shl 8) //or
-                    ((this[idx].toInt()) and 0xFF)
-
+        //((this[idx].toUInt() and 0xFFu) shl 24) or
+        //((this[idx].toInt() and 0xFF) shl 16) //or
+            //((this[idx].toInt() and 0xFF) shl 8) //or
+            ((this[idx].toInt()) and 0xFF)
 
     }
 
@@ -291,7 +389,6 @@ class BleRepository {
         isStatusChange = true
         bleGatt = device?.connectGatt(MyApplication.applicationContext(), false, gattClientCallback)
     }
-
 
 
     /**
@@ -309,8 +406,8 @@ class BleRepository {
         }
     }
 
-    fun writeData(cmdByteArray: ByteArray){
-        val cmdCharacteristic = BluetoothUtils.findCommandCharacteristic(bleGatt!!, 0)
+    fun writeData(cmdByteArray: ByteArray) {
+        val cmdCharacteristic = BluetoothUtils.findCommandCharacteristic(bleGatt!!)
         // disconnect if the characteristic is not found
         if (cmdCharacteristic == null) {
             Log.e(TAG, "Unable to find cmd characteristic")
@@ -321,7 +418,7 @@ class BleRepository {
         cmdCharacteristic.value = cmdByteArray
         val success: Boolean = bleGatt!!.writeCharacteristic(cmdCharacteristic)
         // check the result
-        if( !success ) {
+        if (!success) {
             Log.e(TAG, "Failed to write command")
         }
     }
