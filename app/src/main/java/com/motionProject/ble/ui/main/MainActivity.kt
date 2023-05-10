@@ -1,15 +1,19 @@
 package com.motionProject.ble.ui.main
 
+import android.Manifest
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.telephony.SmsManager
 import android.util.Log
 import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -20,6 +24,8 @@ import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.gun0912.tedpermission.PermissionListener
+import com.gun0912.tedpermission.normal.TedPermission
 import com.motionProject.ble.PERMISSIONS
 import com.motionProject.ble.R
 import com.motionProject.ble.REQUEST_ALL_PERMISSION
@@ -35,6 +41,9 @@ class MainActivity : AppCompatActivity() {
     private val viewModel by viewModel<MainViewModel>()
     private var adapter: BleListAdapter? = null
 //    private lateinit var intent: Intent
+    var phoneNumber = "119"
+    var myUri = Uri.parse("tel:" + phoneNumber)
+    var call_intent = Intent(Intent.ACTION_CALL, myUri)
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,6 +73,7 @@ class MainActivity : AppCompatActivity() {
             requestPermissions(PERMISSIONS, REQUEST_ALL_PERMISSION)
         }
 
+        init()
         initObserver(binding)
 
         binding.btnHome.setOnClickListener {
@@ -72,6 +82,33 @@ class MainActivity : AppCompatActivity() {
             finish()
         }
     }
+    fun init() {
+//        var sensorData = findViewById<TextView>(R.id.sensor_data)
+        var permissionListener = object : PermissionListener {
+            override fun onPermissionGranted() {
+                Toast.makeText(this@MainActivity, "전화 연결 권한이 허용되었습니다.", Toast.LENGTH_SHORT).show()
+//                var phoneNumber = "119"
+//                var myUri = Uri.parse("tel:" + phoneNumber)
+//                var call_intent = Intent(Intent.ACTION_CALL, myUri)
+//                if (sensorData.text == "87") {
+//                    startActivity(call_intent)
+//                    var smsManger = SmsManager.getDefault()
+//                    smsManger.sendTextMessage("119", null, "도와주세요.", null, null)
+//                }
+            }
+
+            override fun onPermissionDenied(deniedPermissions: MutableList<String>?) {
+                Toast.makeText(this@MainActivity, "전화 연결 권한이 거부되었습니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        TedPermission.create()
+            .setPermissionListener(permissionListener)
+            .setDeniedMessage("[설정] 에서 권한을 열어줘야 전화 연결이 가능합니다.")
+            .setPermissions(Manifest.permission.CALL_PHONE)
+            .check()
+    }
+
     private fun initHomeBtn(){
         val homeBtn = findViewById<AppCompatButton>(R.id.btn_home)
 
@@ -106,12 +143,22 @@ class MainActivity : AppCompatActivity() {
         })
 
         viewModel.readTxt.observe(this,{
-
-           binding.txtRead.append(it)
-
+            binding.txtRead.append(it)
+            var text = it.substring(7).replace("[^0-9]".toRegex(), "")
+            binding.sensorData.text = text
+            Log.i("hwisik" , text.javaClass.name)
             // 데이터 전달
 
+            if (text.equals("87")) {
+                var smsManger = SmsManager.getDefault()
+                smsManger.sendTextMessage("010-6577-7996", null, "도와주세요.", null, null)
+                startActivity(call_intent)
+            } else {
+                Log.i("resultss", "None...")
+            }
+
             Log.i("txtRead", it)
+
             if ((binding.txtRead.measuredHeight - binding.scroller.scrollY) <=
                 (binding.scroller.height + binding.txtRead.lineHeight)) {
                 binding.scroller.post {
@@ -176,6 +223,4 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-
-
 }

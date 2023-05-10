@@ -50,10 +50,11 @@ class SensingActivity : AppCompatActivity() {
             override fun onPermissionGranted() {
                 var phoneNumber = "010-6577-7996"
                 var myUri = Uri.parse("tel:${phoneNumber}")
-                var call_intent = Intent(Intent.ACTION_DIAL, myUri)
+                var call_intent = Intent(Intent.ACTION_CALL, myUri)
                 if (hr_value.text == "10") {
                     startActivity(call_intent)
                 }
+
             }
 
             override fun onPermissionDenied(deniedPermissions: MutableList<String>?) {
