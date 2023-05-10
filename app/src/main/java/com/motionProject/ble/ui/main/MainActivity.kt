@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
@@ -26,13 +27,14 @@ import com.motionProject.ble.adapter.BleListAdapter
 import com.motionProject.ble.databinding.ActivityMainBinding
 import com.motionProject.ble.viewmodel.MainViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import kotlin.reflect.typeOf
 
 
 class MainActivity : AppCompatActivity() {
 
     private val viewModel by viewModel<MainViewModel>()
     private var adapter: BleListAdapter? = null
-
+//    private lateinit var intent: Intent
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,7 +48,6 @@ class MainActivity : AppCompatActivity() {
         binding.rvBleList.setHasFixedSize(true)
         val layoutManager: RecyclerView.LayoutManager = LinearLayoutManager(this)
         binding.rvBleList.layoutManager = layoutManager
-
 
         adapter = BleListAdapter()
         binding.rvBleList.adapter = adapter
@@ -63,12 +64,13 @@ class MainActivity : AppCompatActivity() {
             requestPermissions(PERMISSIONS, REQUEST_ALL_PERMISSION)
         }
 
-
         initObserver(binding)
 
-
-
-
+        binding.btnHome.setOnClickListener {
+            var intent = Intent(this, SensingActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
     }
     private fun initHomeBtn(){
         val homeBtn = findViewById<AppCompatButton>(R.id.btn_home)
@@ -86,7 +88,6 @@ class MainActivity : AppCompatActivity() {
                 adapter?.setItem(scanResults)
             }
         })
-
 
         viewModel._isScanning.observe(this,{
             it.getContentIfNotHandled()?.let{ scanning->
@@ -107,7 +108,10 @@ class MainActivity : AppCompatActivity() {
         viewModel.readTxt.observe(this,{
 
            binding.txtRead.append(it)
-            
+
+            // 데이터 전달
+
+            Log.i("txtRead", it)
             if ((binding.txtRead.measuredHeight - binding.scroller.scrollY) <=
                 (binding.scroller.height + binding.txtRead.lineHeight)) {
                 binding.scroller.post {
