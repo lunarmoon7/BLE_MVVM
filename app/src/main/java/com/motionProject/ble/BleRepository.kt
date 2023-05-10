@@ -361,7 +361,7 @@ class BleRepository {
             //val msg = characteristic.getStringValue(0)
             val valueByteArray = characteristic.value // get the value as a ByteArray
             val valUUID = characteristic.uuid.toString().substring(4, 8)
-            val value = valueByteArray.getIntAt(0)
+            val value = valueByteArray.getIntAt(0) // 여기 값을 사용해서, 값이 87이 되면 응급연락하도록..
             //val msg = valueByteArray.toString(Charsets.UTF_8)
             val msg = valUUID + " : " + value.toString() + " \n"
 

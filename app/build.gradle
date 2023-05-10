@@ -67,6 +67,15 @@ dependencies {
     // for new API replaced startActivityForResult
     implementation 'androidx.fragment:fragment-ktx:1.6.0-beta01'
 
+    implementation 'io.github.ParkSangGwon:tedpermission-normal:3.3.0'
+
+    // Coroutine
+    implementation 'io.github.ParkSangGwon:tedpermission-coroutine:3.3.0'
+
+    // RxJava2
+    implementation 'io.github.ParkSangGwon:tedpermission-rx2:3.3.0'
+    // RxJava3
+    implementation 'io.github.ParkSangGwon:tedpermission-rx3:3.3.0'
 }
 
 

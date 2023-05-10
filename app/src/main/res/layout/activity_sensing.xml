@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.main.SensingActivity">
+
+    <TextView
+        android:id="@+id/textView6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="56dp"
+        android:fontFamily="@font/thejamsil4medium"
+        android:gravity="center"
+        android:text="그래프 보기"
+        android:textSize="18dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!--    <androidx.appcompat.widget.AppCompatImageButton-->
+    <!--        android:id="@+id/home_btn"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_marginTop="40dp"-->
+    <!--        android:layout_marginEnd="40dp"-->
+    <!--        android:background="@drawable/home_btn_color"-->
+    <!--        android:src="@drawable/home_icon"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        app:layout_constraintTop_toTopOf="parent" />-->
+
+    <androidx.appcompat.widget.AppCompatImageButton
+        android:id="@+id/msg_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="36dp"
+        android:layout_marginEnd="28dp"
+        android:background="@drawable/call_btn_color"
+        app:layout_constraintEnd_toStartOf="@+id/call_btn"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/msg_icon" />
+
+    <androidx.appcompat.widget.AppCompatImageButton
+        android:id="@+id/call_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="36dp"
+        android:layout_marginEnd="28dp"
+        android:background="@drawable/call_btn_color"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/call_icon" />
+
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/temp_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="116dp"
+        android:layout_marginEnd="40dp"
+        android:background="@drawable/temp_btn_color"
+        android:fontFamily="@font/thejamsil4medium"
+        android:text="체온"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toStartOf="@+id/resp_btn"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/resp_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="116dp"
+        android:layout_marginEnd="32dp"
+        android:background="@drawable/resp_btn_color"
+        android:fontFamily="@font/thejamsil4medium"
+        android:text="호흡"
+        android:textColor="#000000"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/hr_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="116dp"
+        android:background="@drawable/hr_btn_color"
+        android:fontFamily="@font/thejamsil4medium"
+        android:text="심박"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toStartOf="@+id/temp_btn"
+        app:layout_constraintHorizontal_bias="0.44"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/hr_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="40dp"
+        android:layout_marginTop="120dp"
+        android:fontFamily="@font/thejamsil6extrabold"
+        android:gravity="center"
+        android:text="현재 심박"
+        android:textColor="#000000"
+        android:textSize="20sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/hr_btn" />
+
+    <TextView
+        android:id="@+id/temp_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="120dp"
+        android:layout_marginEnd="56dp"
+        android:fontFamily="@font/thejamsil6extrabold"
+        android:gravity="center"
+        android:text="현재 체온"
+        android:textColor="#000000"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toStartOf="@+id/resp_label"
+        app:layout_constraintTop_toBottomOf="@+id/temp_btn" />
+
+    <TextView
+        android:id="@+id/resp_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="120dp"
+        android:layout_marginEnd="32dp"
+        android:fontFamily="@font/thejamsil6extrabold"
+        android:gravity="center"
+        android:text="현재 호흡"
+        android:textColor="#000000"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/resp_btn" />
+
+    <TextView
+        android:id="@+id/hr_value"
+        android:layout_width="87dp"
+        android:layout_height="87dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="56dp"
+        android:text="85"
+        android:textSize="50dp"
+        android:gravity="center"
+        android:fontFamily="@font/thejamsil4medium"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/hr_label" />
+
+    <TextView
+        android:id="@+id/temp_value"
+        android:layout_width="87dp"
+        android:layout_height="87dp"
+        android:layout_marginTop="56dp"
+        android:text="36"
+        android:textSize="50dp"
+        android:gravity="center"
+        android:fontFamily="@font/thejamsil4medium"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.503"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/temp_label" />
+
+    <TextView
+        android:id="@+id/resp_value"
+        android:layout_width="87dp"
+        android:layout_height="87dp"
+        android:layout_marginTop="56dp"
+        android:layout_marginEnd="32dp"
+        android:text="12"
+        android:textSize="50dp"
+        android:gravity="center"
+        android:fontFamily="@font/thejamsil4medium"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/resp_label" />
+
+    <FrameLayout
+        android:id="@+id/fragment_container"
+        android:layout_width="413dp"
+        android:layout_height="502dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.807">
+
+    </FrameLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
